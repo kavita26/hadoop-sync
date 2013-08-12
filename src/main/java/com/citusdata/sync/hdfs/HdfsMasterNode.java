@@ -94,7 +94,7 @@ public class HdfsMasterNode {
 
         /* create and add shard placement */
         ShardPlacement shardPlacement =
-            new ShardPlacement(blockId, blockLength, dataNodeName);
+          new ShardPlacement(blockId, blockLength, dataNodeName);
         shardPlacementSet.add(shardPlacement);
       }
     }
@@ -162,7 +162,7 @@ public class HdfsMasterNode {
 
       /* find all blocks that belong to this file */
       LocatedBlocks fileBlocks =
-          nameNodeClient.getBlockLocations(filePath, fileStartOffset, fileLength);
+        nameNodeClient.getBlockLocations(filePath, fileStartOffset, fileLength);
       List<LocatedBlock> fileBlockList = fileBlocks.getLocatedBlocks();
 
       locatedBlockList.addAll(fileBlockList);
