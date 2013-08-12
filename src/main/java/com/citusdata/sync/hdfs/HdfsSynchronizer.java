@@ -61,7 +61,7 @@ public class HdfsSynchronizer {
     String tableName = args[0];
     boolean fetchMinMaxValue = false;
     if (args.length >= 2) {
-        fetchMinMaxValue = true;
+      fetchMinMaxValue = true;
     }
 
     try {

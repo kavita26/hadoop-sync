@@ -257,7 +257,7 @@ public class CitusMasterNode {
 
     try {
       insertPlacementRowStatement =
-          masterNodeConnection.prepareStatement(MASTER_INSERT_SHARD_PLACEMENT_ROW);
+        masterNodeConnection.prepareStatement(MASTER_INSERT_SHARD_PLACEMENT_ROW);
       insertPlacementRowStatement.setLong(1, shardPlacement.getShardId());
       insertPlacementRowStatement.setInt(2, FILE_FINALIZED);
       insertPlacementRowStatement.setLong(3, shardPlacement.getShardLength());
