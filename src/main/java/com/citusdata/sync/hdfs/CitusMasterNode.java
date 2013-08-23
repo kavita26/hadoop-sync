@@ -104,6 +104,13 @@ public class CitusMasterNode {
   }
 
   /*
+   *  rollbackTransactionBlock rolls back a transaction block.
+   */
+  public void rollbackTransactionBlock() throws SQLException {
+    masterNodeConnection.rollback();
+  }
+
+  /*
    * commitTransactionBlock makes all changes in the started transaction block
    * permanent.
    */

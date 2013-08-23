@@ -219,6 +219,8 @@ public class HdfsSynchronizer {
     try {
       citusMasterNode = new CitusMasterNode(citusMasterNodeName, citusMasterNodePort);
 
+      citusMasterNode.beginTransactionBlock();
+
       /* first, remove old shard placements from CitusDB and track removed shards */
       SortedSet<ShardPlacement> deletedShardPlacementSet = new TreeSet<ShardPlacement>();
 
@@ -275,7 +277,6 @@ public class HdfsSynchronizer {
        * new new shardId. If we don't, we failed to synchronize a new HDFS block
        * and we error out.
        */
-      citusMasterNode.beginTransactionBlock();
 
       for (Long newShardId : metadata.newShardIdSet) {
         Set<ShardPlacement> newShardPlacementSet =
@@ -317,6 +318,10 @@ public class HdfsSynchronizer {
       }
 
       citusMasterNode.commitTransactionBlock();
+
+    } catch (SQLException sqlException) {
+      citusMasterNode.rollbackTransactionBlock();
+      throw sqlException;
 
     } finally {
       if (citusMasterNode != null) {
