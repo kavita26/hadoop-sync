@@ -29,8 +29,8 @@ public class CitusWorkerNode {
     "SELECT * FROM worker_apply_shard_ddl_command (?, ?)";
   private static final String SET_FOREIGN_TABLE_FILENAME =
     "ALTER FOREIGN TABLE %s OPTIONS (SET filename '%s')";
-  private static final String DROP_FOREIGN_FILE_SERVER =
-    "DROP SERVER IF EXISTS file_server CASCADE";
+  private static final String DROP_FOREIGN_SERVER =
+    "DROP SERVER IF EXISTS %s CASCADE";
 
   /* internal definitions used to construct shard table name */
   private static final String SHARD_NAME_SEPARATOR = "_";
@@ -113,19 +113,23 @@ public class CitusWorkerNode {
   }
 
   /*
-   * dropForeignFileServer removes the foreign file server and foreign table for
-   * the given shardId, if such a foreign file server exists.
+   * dropForeignServer removes the foreign server and foreign table for the
+   * given shardId and foreign server name, if such a foreign server exists.
    */
-  public void dropForeignFileServer(long shardId) throws SQLException {
-    PreparedStatement dropStatement = null;
-    try {
-      dropStatement = workerNodeConnection.prepareStatement(APPLY_SHARD_DDL_COMMAND);
-      dropStatement.setLong(1, shardId);
-      dropStatement.setString(2, DROP_FOREIGN_FILE_SERVER);
+    public void dropForeignServer(long shardId, String foreignServer)
+      throws SQLException {
+      PreparedStatement dropStatement = null;
+      String dropForeignServerString =  String.format(DROP_FOREIGN_SERVER,
+                                                      foreignServer);
 
-      dropStatement.execute();
-    } finally {
-      releaseResources(dropStatement);
+      try {
+        dropStatement = workerNodeConnection.prepareStatement(APPLY_SHARD_DDL_COMMAND);
+        dropStatement.setLong(1, shardId);
+        dropStatement.setString(2, dropForeignServerString);
+
+        dropStatement.execute();
+      } finally {
+        releaseResources(dropStatement);
     }
   }
 

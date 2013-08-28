@@ -60,6 +60,11 @@ public class CitusMasterNode {
   private static final String FETCH_VALUE_FROM_OPTION_ARRAY =
     "SELECT option_value FROM pg_options_to_table(?) WHERE option_name = ?";
 
+  /* remote function call that fetches foreign server of foreign table */
+  private static final String FETCH_FOREIGN_SERVER =
+    "SELECT srvname FROM pg_foreign_server, pg_foreign_table WHERE " +
+    "ftrelid = ? AND pg_foreign_server.oid = pg_foreign_table.ftserver";
+
   /* column names used to identify response fields returned from master node */
   private static final String LOGICAL_RELID_FIELD = "logical_relid";
   private static final String SHARD_ID_FIELD = "shardid";
@@ -69,6 +74,7 @@ public class CitusMasterNode {
   private static final String PART_KEY_FIELD = "part_key";
   private static final String FOREIGN_TABLE_OPTIONS_FIELD = "ftoptions";
   private static final String OPTION_VALUE_FIELD = "option_value";
+  private static final String FOREIGN_SERVER_NAME_FIELD = "srvname";
   private static final int FILE_FINALIZED = 1;
 
   /*
@@ -372,6 +378,32 @@ public class CitusMasterNode {
     }
 
     return optionValue;
+  }
+
+  /*
+   * fetchForeignServer resolves the foreign server of the given foreign table.
+   */
+  public String fetchForeignServer(String tableName) throws SQLException {
+    String foreginServer = null;
+    PreparedStatement fetchForeignServerStatement = null;
+
+    try {
+      fetchForeignServerStatement =
+        masterNodeConnection.prepareStatement(FETCH_FOREIGN_SERVER);
+
+      long tableId = fetchTableId(tableName);
+      fetchForeignServerStatement.setLong(1, tableId);
+
+      ResultSet foreignServerResultSet = fetchForeignServerStatement.executeQuery();
+
+      foreignServerResultSet.next();
+      foreginServer = foreignServerResultSet.getString(FOREIGN_SERVER_NAME_FIELD);
+
+    } finally {
+      releaseResources(fetchForeignServerStatement);
+    }
+
+    return foreginServer;
   }
 
   /*
