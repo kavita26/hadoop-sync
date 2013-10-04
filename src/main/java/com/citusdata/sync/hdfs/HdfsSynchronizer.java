@@ -218,7 +218,7 @@ public class HdfsSynchronizer {
 
     try {
       citusMasterNode = new CitusMasterNode(citusMasterNodeName, citusMasterNodePort);
-      String foreignServer = citusMasterNode.fetchForeignServer(tableName);
+      String foreignServerName = citusMasterNode.fetchForeignServerName(tableName);
       
       citusMasterNode.beginTransactionBlock();
 
@@ -226,7 +226,7 @@ public class HdfsSynchronizer {
       SortedSet<ShardPlacement> deletedShardPlacementSet = new TreeSet<ShardPlacement>();
 
       for (ShardPlacement oldShardPlacement : metadata.oldShardPlacementSet) {
-        boolean dropped = dropShardPlacementTable(oldShardPlacement, foreignServer);
+        boolean dropped = dropShardPlacementTable(oldShardPlacement, foreignServerName);
         if (dropped) {
           citusMasterNode.deleteShardPlacementRow(oldShardPlacement);
 
@@ -240,8 +240,8 @@ public class HdfsSynchronizer {
       SortedSet<ShardPlacement> insertedShardPlacementSet = new TreeSet<ShardPlacement>();
 
       for (ShardPlacement newShardPlacement : metadata.newShardPlacementSet) {
-        boolean created = createShardPlacementTable(newShardPlacement, tableName, 
-                                                    tableDDLEventList, foreignServer);
+        boolean created = createShardPlacementTable(newShardPlacement, foreignServerName,
+                                                    tableName, tableDDLEventList);
         if (created) {
           int newShardNodePort = citusWorkerNodePort;
           citusMasterNode.insertShardPlacementRow(newShardPlacement, newShardNodePort);
@@ -337,7 +337,7 @@ public class HdfsSynchronizer {
    * foreign server/table that corresponds to the given shard placement.
    */
   private boolean dropShardPlacementTable(ShardPlacement shardPlacement, 
-                                          String foreignServer) {
+                                          String foreignServerName) {
     CitusWorkerNode citusWorkerNode = null;
     boolean tableDropped = true;
 
@@ -347,7 +347,7 @@ public class HdfsSynchronizer {
 
       /* drop shard placement's foreign table on worker node */
       citusWorkerNode = new CitusWorkerNode(workerNodeName, citusWorkerNodePort);
-      citusWorkerNode.dropForeignServer(shardId, foreignServer);
+      citusWorkerNode.dropForeignServer(shardId, foreignServerName);
 
     } catch (SQLException sqlException) {
       String logMessage = "could not drop shard placement from worker node";
@@ -371,9 +371,9 @@ public class HdfsSynchronizer {
    * any existing foreign table for this shard to ensure idempotent behavior.
    */
   private boolean createShardPlacementTable(ShardPlacement shardPlacement,
+                                            String foreignServerName,
                                             String tableName,
-                                            List<String> tableDDLEventList,
-                                            String foreignServer) {
+                                            List<String> tableDDLEventList) {
     HdfsWorkerNode hdfsWorkerNode = null;
     CitusWorkerNode citusWorkerNode = null;
     boolean tableCreated = true;
@@ -388,7 +388,7 @@ public class HdfsSynchronizer {
       String localFilePath = hdfsWorkerNode.fetchShardLocalFilePath(shardId, shardLength);
 
       citusWorkerNode = new CitusWorkerNode(workerNodeName, citusWorkerNodePort);
-      citusWorkerNode.dropForeignServer(shardId, foreignServer); /* drop if exists */
+      citusWorkerNode.dropForeignServer(shardId, foreignServerName); /* drop if exists */
       citusWorkerNode.createForeignTable(shardId, tableDDLEventList,
                                          tableName, localFilePath);
 

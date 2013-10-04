@@ -61,7 +61,7 @@ public class CitusMasterNode {
     "SELECT option_value FROM pg_options_to_table(?) WHERE option_name = ?";
 
   /* remote function call that fetches foreign server of foreign table */
-  private static final String FETCH_FOREIGN_SERVER =
+  private static final String FETCH_FOREIGN_SERVER_NAME =
     "SELECT srvname FROM pg_foreign_server, pg_foreign_table WHERE " +
     "ftrelid = ? AND pg_foreign_server.oid = pg_foreign_table.ftserver";
 
@@ -381,29 +381,29 @@ public class CitusMasterNode {
   }
 
   /*
-   * fetchForeignServer resolves the foreign server of the given foreign table.
+   * fetchForeignServerName resolves the foreign server of the given foreign table.
    */
-  public String fetchForeignServer(String tableName) throws SQLException {
-    String foreginServer = null;
-    PreparedStatement fetchForeignServerStatement = null;
+  public String fetchForeignServerName(String tableName) throws SQLException {
+    String foreginServerName = null;
+    PreparedStatement fetchForeignServerNameStatement = null;
 
     try {
-      fetchForeignServerStatement =
-        masterNodeConnection.prepareStatement(FETCH_FOREIGN_SERVER);
-
       long tableId = fetchTableId(tableName);
-      fetchForeignServerStatement.setLong(1, tableId);
 
-      ResultSet foreignServerResultSet = fetchForeignServerStatement.executeQuery();
+      fetchForeignServerNameStatement =
+        masterNodeConnection.prepareStatement(FETCH_FOREIGN_SERVER_NAME);
+      fetchForeignServerNameStatement.setLong(1, tableId);
 
-      foreignServerResultSet.next();
-      foreginServer = foreignServerResultSet.getString(FOREIGN_SERVER_NAME_FIELD);
+      ResultSet foreignServerNameResultSet = fetchForeignServerNameStatement.executeQuery();
+
+      foreignServerNameResultSet.next();
+      foreginServerName = foreignServerNameResultSet.getString(FOREIGN_SERVER_NAME_FIELD);
 
     } finally {
-      releaseResources(fetchForeignServerStatement);
+      releaseResources(fetchForeignServerNameStatement);
     }
 
-    return foreginServer;
+    return foreginServerName;
   }
 
   /*

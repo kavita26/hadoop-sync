@@ -116,11 +116,11 @@ public class CitusWorkerNode {
    * dropForeignServer removes the foreign server and foreign table for the
    * given shardId and foreign server name, if such a foreign server exists.
    */
-    public void dropForeignServer(long shardId, String foreignServer)
+    public void dropForeignServer(long shardId, String foreignServerName)
       throws SQLException {
       PreparedStatement dropStatement = null;
       String dropForeignServerString =  String.format(DROP_FOREIGN_SERVER,
-                                                      foreignServer);
+                                                      foreignServerName);
 
       try {
         dropStatement = workerNodeConnection.prepareStatement(APPLY_SHARD_DDL_COMMAND);
